@@ -56,7 +56,7 @@ with col2:
 st.markdown("---")
 
 # ==============================================================================
-# 2. UNIVERSAL INFERENCE ENGINE (Auto-detects Pipeline vs Raw Model)
+# 2. UNIVERSAL INFERENCE ENGINE (Case-Insensitive Feature Realignment)
 # ==============================================================================
 if st.button("🚀 Analyze Ghosting Risk Profile", type="primary"):
     
@@ -82,29 +82,36 @@ if st.button("🚀 Analyze Ghosting Risk Profile", type="primary"):
         'mutual_matches': mutual_matches,
         'msg_to_usage_ratio': msg_to_usage_ratio,
         'likes_to_match_ratio': likes_to_match_ratio,
-        'Engagement_Score': engagement_score,
-        'Selectivity_Index': selectivity_index,
+        'engagement_score': engagement_score,      # Forced lowercase
+        'selectivity_index': selectivity_index,    # Forced lowercase
         'app_usage_time_label': app_usage_time_label,
         'bio_length': bio_length,              
         'education_level': education_level      
     }
     
-    # Convert inputs to DataFrame
+    # Convert inputs to DataFrame and force all keys to lowercase immediately
     df_inference = pd.DataFrame([input_data])
+    df_inference.columns = df_inference.columns.str.lower()
     
     try:
         # 3. AUTO-DETECT ARCHITECTURE LAYER
-        # Check if loaded model is an integrated Pipeline or raw Estimator
         if hasattr(model, 'named_steps'):
-            # It's our new Pipeline bundle! Extract feature names from the first step
             expected_features = model.named_steps['scaler'].feature_names_in_
-            df_inference = df_inference.reindex(columns=expected_features, fill_value=0.0)
         elif hasattr(model, 'feature_names_in_'):
-            # It's the fallback raw model estimator
             expected_features = model.feature_names_in_
-            df_inference = df_inference.reindex(columns=expected_features, fill_value=0.0)
         else:
+            expected_features = []
             st.warning("⚠️ Warning: Model schema structure could not read input names natively.")
+
+        if len(expected_features) > 0:
+            # Convert expected features list to lowercase to ensure an absolute match
+            expected_features_lower = [str(col).lower() for col in expected_features]
+            
+            # Reindex using the lowercase clean mapping
+            df_inference = df_inference.reindex(columns=expected_features_lower, fill_value=0.0)
+            
+            # Restore original structural casing names so scikit-learn validation is happy
+            df_inference.columns = expected_features
 
         # 4. Execute Prediction securely
         prediction = model.predict(df_inference)[0]
