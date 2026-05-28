@@ -93,15 +93,15 @@ if st.button("🚀 Analyze Ghosting Risk Profile", type="primary"):
     df_inference = pd.DataFrame([input_data])
     
     try:
-        # 3. CRITICAL FIX: Extract exact features the pipeline was trained on
-        # Since it's a scikit-learn Pipeline, we grab the feature names from the final classifier step
-        expected_features = model.named_steps['classifier'].feature_names_in_
+        # 3. DIRECT FIX: Read feature names straight from the ExtraTreesClassifier
+        if hasattr(model, 'feature_names_in_'):
+            expected_features = model.feature_names_in_
+            
+            # Programmatically inject any missing columns (like emoji_usage_rate) with 0.0
+            # and perfectly re-order them to match training alignment!
+            df_inference = df_inference.reindex(columns=expected_features, fill_value=0.0)
         
-        # Reindex forces df_inference to have the exact same columns and order as expected_features.
-        # Any missing column (like emoji_usage_rate, income_bracket, etc.) will automatically get filled with 0.0
-        df_inference = df_inference.reindex(columns=expected_features, fill_value=0.0)
-        
-        # 4. Execute Pipeline
+        # 4. Execute Prediction
         prediction = model.predict(df_inference)[0]
         probabilities = model.predict_proba(df_inference)[0]
         
