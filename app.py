@@ -60,16 +60,15 @@ st.markdown("---")
 # ==============================================================================
 if st.button("🚀 Analyze Ghosting Risk Profile", type="primary"):
     
-    # 1. Dynamically compute teammate's ratio metrics naturally
+    # 1. Compute engineered features naturally
     msg_to_usage_ratio = message_sent_count / (app_usage_time_min + 1)
     likes_to_match_ratio = likes_received / (mutual_matches + 1)
     
-    # 2. Compute behavioral index features 
     engagement_score = (message_sent_count + swipes_per_day) / 2.0
     selectivity_index = mutual_matches / (swipes_per_day + 1)
     app_usage_time_label = 1 if app_usage_time_min > 30 else 0
     
-    # 3. Map explicitly to your exact input dictionary schema 
+    # 2. Map existing UI values
     input_data = {
         'age': age,
         'gender_encoded': gender_encoded,
@@ -90,11 +89,19 @@ if st.button("🚀 Analyze Ghosting Risk Profile", type="primary"):
         'education_level': education_level      
     }
     
-    # Convert to DataFrame row
+    # Convert to initial DataFrame
     df_inference = pd.DataFrame([input_data])
     
     try:
-        # 4. Run through the pipeline (It automatically scales the data internally!)
+        # 3. CRITICAL FIX: Extract exact features the pipeline was trained on
+        # Since it's a scikit-learn Pipeline, we grab the feature names from the final classifier step
+        expected_features = model.named_steps['classifier'].feature_names_in_
+        
+        # Reindex forces df_inference to have the exact same columns and order as expected_features.
+        # Any missing column (like emoji_usage_rate, income_bracket, etc.) will automatically get filled with 0.0
+        df_inference = df_inference.reindex(columns=expected_features, fill_value=0.0)
+        
+        # 4. Execute Pipeline
         prediction = model.predict(df_inference)[0]
         probabilities = model.predict_proba(df_inference)[0]
         
