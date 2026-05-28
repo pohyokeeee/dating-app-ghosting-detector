@@ -56,7 +56,7 @@ with col2:
 st.markdown("---")
 
 # ==============================================================================
-# 2. PIPELINE INFERENCE ENGINE (Strict Type & Alignment Enforcement)
+# 2. UNIVERSAL INFERENCE ENGINE (Auto-detects Pipeline vs Raw Model)
 # ==============================================================================
 if st.button("🚀 Analyze Ghosting Risk Profile", type="primary"):
     
@@ -68,7 +68,7 @@ if st.button("🚀 Analyze Ghosting Risk Profile", type="primary"):
     selectivity_index = mutual_matches / (swipes_per_day + 1)
     app_usage_time_label = 1 if app_usage_time_min > 30 else 0
     
-    # 2. Map existing UI values
+    # 2. Map existing UI values to matching schema
     input_data = {
         'age': age,
         'gender_encoded': gender_encoded,
@@ -89,19 +89,24 @@ if st.button("🚀 Analyze Ghosting Risk Profile", type="primary"):
         'education_level': education_level      
     }
     
-    # Convert to initial DataFrame
+    # Convert inputs to DataFrame
     df_inference = pd.DataFrame([input_data])
     
     try:
-        # 3. DIRECT FIX: Read feature names straight from the ExtraTreesClassifier
-        if hasattr(model, 'feature_names_in_'):
-            expected_features = model.feature_names_in_
-            
-            # Programmatically inject any missing columns (like emoji_usage_rate) with 0.0
-            # and perfectly re-order them to match training alignment!
+        # 3. AUTO-DETECT ARCHITECTURE LAYER
+        # Check if loaded model is an integrated Pipeline or raw Estimator
+        if hasattr(model, 'named_steps'):
+            # It's our new Pipeline bundle! Extract feature names from the first step
+            expected_features = model.named_steps['scaler'].feature_names_in_
             df_inference = df_inference.reindex(columns=expected_features, fill_value=0.0)
-        
-        # 4. Execute Prediction
+        elif hasattr(model, 'feature_names_in_'):
+            # It's the fallback raw model estimator
+            expected_features = model.feature_names_in_
+            df_inference = df_inference.reindex(columns=expected_features, fill_value=0.0)
+        else:
+            st.warning("⚠️ Warning: Model schema structure could not read input names natively.")
+
+        # 4. Execute Prediction securely
         prediction = model.predict(df_inference)[0]
         probabilities = model.predict_proba(df_inference)[0]
         
