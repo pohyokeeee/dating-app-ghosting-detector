@@ -60,48 +60,41 @@ st.markdown("---")
 # ==============================================================================
 if st.button("🚀 Analyze Ghosting Risk Profile", type="primary"):
     
-    # 1. Dynamically compute ratio metrics as explicit floats
-    msg_to_usage_ratio = float(message_sent_count) / (float(app_usage_time_min) + 1.0)
-    likes_to_match_ratio = float(likes_received) / (float(mutual_matches) + 1.0)
+    # 1. Dynamically compute teammate's ratio metrics naturally
+    msg_to_usage_ratio = message_sent_count / (app_usage_time_min + 1)
+    likes_to_match_ratio = likes_received / (mutual_matches + 1)
     
-    # 2. Compute active behavioral index features as explicit floats
-    engagement_score = (float(message_sent_count) + float(swipes_per_day)) / 2.0
-    selectivity_index = float(mutual_matches) / (float(swipes_per_day) + 1.0)
-    app_usage_time_label = 1.0 if app_usage_time_min > 30 else 0.0
+    # 2. Compute behavioral index features 
+    engagement_score = (message_sent_count + swipes_per_day) / 2.0
+    selectivity_index = mutual_matches / (swipes_per_day + 1)
+    app_usage_time_label = 1 if app_usage_time_min > 30 else 0
     
-    # 3. Map to input schema, casting every item to float
+    # 3. Map explicitly to your exact input dictionary schema 
     input_data = {
-        'age': float(age),
-        'gender_encoded': float(gender_encoded),
-        'location_distance_km': float(location_distance_km),
-        'app_usage_time_min': float(app_usage_time_min),
-        'swipes_per_day': float(swipes_per_day),
-        'message_sent_count': float(message_sent_count),
-        'message_received_count': float(message_received_count),
-        'profile_completion_percentage': float(profile_completion_percentage),
-        'likes_received': float(likes_received),
-        'mutual_matches': float(mutual_matches),
+        'age': age,
+        'gender_encoded': gender_encoded,
+        'location_distance_km': location_distance_km,
+        'app_usage_time_min': app_usage_time_min,
+        'swipes_per_day': swipes_per_day,
+        'message_sent_count': message_sent_count,
+        'message_received_count': message_received_count,
+        'profile_completion_percentage': profile_completion_percentage,
+        'likes_received': likes_received,
+        'mutual_matches': mutual_matches,
         'msg_to_usage_ratio': msg_to_usage_ratio,
         'likes_to_match_ratio': likes_to_match_ratio,
         'Engagement_Score': engagement_score,
         'Selectivity_Index': selectivity_index,
         'app_usage_time_label': app_usage_time_label,
-        'bio_length': float(bio_length),
-        'education_level': float(education_level)
+        'bio_length': bio_length,              
+        'education_level': education_level      
     }
     
-    # 4. Form DataFrame and strictly enforce 64-bit float representation
-    df_inference = pd.DataFrame([input_data]).astype(np.float64)
-    
-    # 5. Lock column placement to match training logs
-    try:
-        expected_features = model.feature_names_in_
-        df_inference = df_inference.reindex(columns=expected_features, fill_value=0.0)
-    except AttributeError:
-        pass
+    # Convert to DataFrame row
+    df_inference = pd.DataFrame([input_data])
     
     try:
-        # Run calculation
+        # 4. Run through the pipeline (It automatically scales the data internally!)
         prediction = model.predict(df_inference)[0]
         probabilities = model.predict_proba(df_inference)[0]
         
