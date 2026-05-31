@@ -654,8 +654,8 @@ elif selected == "Models":
 
     st.markdown("""
 <div class='best-model-box'>
-🏆 Best Performing Model: <b>K-Nearest Neighbors</b>
-(Accuracy: <b>87.75%</b>, Macro F1: <b>49.36%</b>)
+🏆 Best Performing Model: <b>Random Forest</b>
+(Accuracy: <b>83.61%</b>, Macro F1: <b>49.99%</b>)
 </div>
 """, unsafe_allow_html=True)
 
