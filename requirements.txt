@@ -1,6 +1,9 @@
 streamlit
+streamlit-option-menu
+plotly
 pandas
 numpy
+joblib
+scikit-learn
 flaml
 xgboost
-lightgbm
