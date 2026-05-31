@@ -7,6 +7,7 @@ import numpy as np
 import joblib
 import os
 import streamlit.components.v1 as components
+import textwrap
 
 
 # -----------------------------
@@ -210,6 +211,25 @@ html, body, [class*='css'] {
         transform: rotate(-45deg) scale(0.9);
     }
 }
+
+.built-dev-badge{
+    display:inline-block;
+    padding:8px 12px;
+    border-radius:12px;
+    background: linear-gradient(90deg, rgba(255,0,128,0.22), rgba(139,92,246,0.22));
+    border: 1px solid rgba(255,255,255,0.14);
+    color: white;
+    font-size:14px;
+    font-weight:700;
+}
+
+.home-dev-corner{
+    position: fixed;
+    top: 20px;
+    right: 24px;
+    z-index: 9999;
+    pointer-events: none;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -240,6 +260,11 @@ selected = option_menu(
 if selected == "Home":
 
     st.session_state.prediction_done = False
+
+    st.markdown(
+        "<span class='built-dev-badge home-dev-corner'>Developed by AR. Shezan</span>",
+        unsafe_allow_html=True
+    )
 
     left, right = st.columns([1.5,1], gap="large")
 
@@ -745,18 +770,22 @@ elif selected == "About":
     )
 
     st.markdown(
-        """
-        <div class='result-box'>
-            <h2>Dating Analytics Platform</h2>
-            <p style='font-size:20px;color:#bbbbcc; line-height:1.8'>
-               Ghosted Predictor is an intelligent machine learning platform designed to analyze dating app interactions and estimate the likelihood of ghosting.
-               By leveraging behavioral patterns, user engagement metrics and communication trends, the system provides data-driven relationship insights.
-               The platform evaluates multiple predictive models to identify the most effective approach for ghosting detection.
-               Through interactive analytics and visualization, users can better understand their dating behaviors and communication outcomes.
-               Our goal is to transform complex dating data into meaningful predictions that support informed relationship decisions.....
-               </p>
-
-                    """,
+                textwrap.dedent("""
+<div class='result-box'>
+    <h2>Dating Analytics Platform</h2>
+    <p style='font-size:20px;color:#bbbbcc; line-height:1.8'>
+        Ghosted Predictor is an intelligent machine learning platform designed to analyze dating app interactions and estimate the likelihood of ghosting.
+        By leveraging behavioral patterns, user engagement metrics and communication trends, the system provides data-driven relationship insights.
+        The platform evaluates multiple predictive models to identify the most effective approach for ghosting detection.
+        Through interactive analytics and visualization, users can better understand their dating behaviors and communication outcomes.
+        Our goal is to transform complex dating data into meaningful predictions that support informed relationship decisions.....
+    </p>
+                         
+    ""
+                                
+        UI built & developed by : AR. Shezan (arshezan.my@gmail.com)
+</div>
+                """),
 
                   unsafe_allow_html=True
                   )
