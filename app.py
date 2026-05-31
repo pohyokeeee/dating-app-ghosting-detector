@@ -1,225 +1,767 @@
-import warnings
-warnings.filterwarnings("ignore", category=UserWarning, module="sklearn")
 import streamlit as st
+from streamlit_option_menu import option_menu
+import plotly.graph_objects as go
+import plotly.express as px
 import pandas as pd
 import numpy as np
-import pickle
+import joblib
+import os
+import streamlit.components.v1 as components
 
-# 🏢 Page Configuration Profile Architecture Setup
+
+# -----------------------------
+# LOAD FULL PIPELINE
+# -----------------------------
+PIPELINE_PATH = "flaml_best_model.pkl"
+pipeline = joblib.load(PIPELINE_PATH)
+
+
+# ---------------------------------
+# PAGE CONFIG
+# ---------------------------------
 st.set_page_config(
-    page_title="Ghosting Analytics Engine",
-    page_icon="🎯",
+    page_title="Ghosted Predictor",
+    page_icon="💔",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
-# 🎨 Custom High-Class Premium Dark UI Styling Injection
+
 st.markdown("""
-    <style>
-    .stApp {
-        background-color: #0f172a;
-        color: #f8fafc;
-    }
-    [data-testid="stSidebar"] {
-        background-color: #1e293b !important;
-        border-right: 1px solid #334155;
-    }
-    .metric-card {
-        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-        border: 1px solid #334155;
-        padding: 24px;
-        border-radius: 16px;
-        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-        text-align: center;
-        transition: transform 0.3s ease;
-    }
-    .metric-card:hover {
-        transform: translateY(-5px);
-        border-color: #3b82f6;
-    }
-    h1, h2, h3 {
-        font-family: 'Inter', sans-serif;
-        font-weight: 700 !important;
-        letter-spacing: -0.02em;
-    }
-    div.stButton > button:first-child {
-        background: linear-gradient(90deg, #2563eb 0%, #1d4ed8 100%) !important;
-        color: white !important;
-        border: none !important;
-        padding: 14px 28px !important;
-        border-radius: 12px !important;
-        font-weight: 600 !important;
-        font-size: 16px !important;
-        width: 100% !important;
-        box-shadow: 0 4px 14px 0 rgba(37, 99, 235, 0.4) !important;
-        transition: all 0.3s ease !important;
-    }
-    div.stButton > button:first-child:hover {
-        transform: translateY(-2px) !important;
-        box-shadow: 0 6px 20px 0 rgba(37, 99, 235, 0.6) !important;
-    }
-    </style>
+<style>
+
+/* Hide hamburger menu */
+#MainMenu {
+    visibility: hidden;
+}
+
+/* Hide footer */
+footer {
+    visibility: hidden;
+}
+
+/* Hide header */
+header {
+    visibility: hidden;
+}
+
+</style>
 """, unsafe_allow_html=True)
 
-@st.cache_resource
-def load_flaml_model():
-    model_path = "flaml_best_model.pkl"
-    with open(model_path, 'rb') as f:
-        return pickle.load(f)
 
-with st.sidebar:
-    st.markdown("<h2 style='color: #3b82f6; margin-bottom: 0;'>⚙️ System Kernel</h2>", unsafe_allow_html=True)
-    st.markdown("<p style='color: #94a3b8; font-size: 13px;'>ML Assignment Production Build v2.1</p>", unsafe_allow_html=True)
-    st.markdown("---")
-    
-    try:
-        model = load_flaml_model()
-        st.markdown("""
-            <div style='background-color: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; padding: 12px; border-radius: 10px; text-align: center;'>
-                <span style='color: #10b981; font-weight: bold;'>● FLAML ENGINE ONLINE</span>
-            </div>
-        """, unsafe_allow_html=True)
-    except Exception as e:
-        # 🚨 THE PERMANENT FIX APPLIED TO SYSTEM BANNER
-        st.markdown("""
-            <div style='background-color: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; padding: 12px; border-radius: 10px; text-align: center;'>
-                <span style='color: #ef4444; font-weight: bold;'>● PIPELINE OFFLINE</span>
-            </div>
-        """, unsafe_allow_html=True)
-        st.stop()
-        
-    st.markdown("---")
-    st.markdown("<p style='color: #64748b; font-size: 12px;'>Faculty of Computer Science and Information Technology<br><b>Universiti Malaya</b></p>", unsafe_allow_html=True)
+# ---------------------------------
+# SESSION STATE
+# ---------------------------------
+if 'nav_index' not in st.session_state:
+    st.session_state.nav_index = 0
 
-st.markdown("<h1 style='font-size: 40px; margin-bottom: 5px;'>🎯 Predictive Analytics Dashboard</h1>", unsafe_allow_html=True)
-st.markdown("<p style='color: #94a3b8; font-size: 16px; margin-bottom: 30px;'>Leveraging specialized Lightweight AutoML optimizations to analyze conversational drop-off risks and relational retention metrics.</p>", unsafe_allow_html=True)
+if 'prediction_done' not in st.session_state:
+    st.session_state.prediction_done = False
 
-form_container = st.container()
-with form_container:
-    tab1, tab2 = st.tabs(["👤 Demographic & Profile Architecture", "📈 In-App Behavioral Vectors"])
-    
-    with tab1:
-        c1, c2 = st.columns(2, gap="large")
-        with c1:
-            st.markdown("<h3 style='color: #3b82f6; font-size: 18px;'>Identity Profiling</h3>", unsafe_allow_html=True)
-            gender_ui = st.selectbox("Gender Identity Spectrum", options=["Female", "Genderfluid", "Male", "Non-binary", "Prefer Not to Say", "Transgender"])
-            sexual_orientation = st.selectbox("Orientation Vector", options=[0, 1, 2], format_func=lambda x: ["Bisexual", "Gay", "Pansexual"][x])
-            location_type = st.selectbox("Geographic Profile Matrix", options=[0, 1, 2], format_func=lambda x: ["Metropolitan Cluster", "Suburban Matrix", "Urban Core"][x])
-        with c2:
-            st.markdown("<h3 style='color: #3b82f6; font-size: 18px;'>Account Characteristics</h3>", unsafe_allow_html=True)
-            income_bracket = st.selectbox("Estimated Income Segment", options=[0, 1, 2, 3, 4], format_func=lambda x: ["Tier 5 (Very Low)", "Tier 4 (Low)", "Tier 3 (Middle)", "Tier 2 (Upper-Middle)", "Tier 1 (High)"][x])
-            profile_pics_count = st.slider("Verified Portrait Display Count", min_value=1, max_value=6, value=3)
-            bio_length = st.number_input("Profile Biography Metrics (Character Count)", min_value=0, max_value=1000, value=150)
+def set_nav_page(index):
+    st.session_state.nav_index = index
+    st.rerun()
 
-    with tab2:
-        c3, c4 = st.columns(2, gap="large")
-        with c3:
-            st.markdown("<h3 style='color: #6366f1; font-size: 18px;'>Activity Quantization</h3>", unsafe_allow_html=True)
-            app_usage_time_min = st.number_input("Daily Application Retention Window (Minutes)", min_value=0, max_value=1440, value=45)
-            app_usage_time_label = st.selectbox("User Retention Classification Index", options=[0, 1, 2], format_func=lambda x: ["Standard Active User", "Elevated Activity Profile", "High-Velocity Power User"][x])
-            swipe_right_ratio = st.slider("Swipe-Right Selectivity Balance Rate", min_value=0.0, max_value=1.0, value=0.45, step=0.01)
-            swipe_right_label = st.selectbox("Selection Bias Profile", options=[0, 1], format_func=lambda x: ["Highly Selective Sifting", "Optimistic Batch Approvals"][x])
-        with c4:
-            st.markdown("<h3 style='color: #6366f1; font-size: 18px;'>Interaction Analytics</h3>", unsafe_allow_html=True)
-            likes_received = st.number_input("Aggregated Inbound Signals Received", min_value=0, max_value=100000, value=25)
-            mutual_matches = st.number_input("Bi-Directional Matches Confirmed", min_value=0, max_value=5000, value=4)
-            message_sent_count = st.number_input("Outbound Structural Messaging Volume", min_value=0, max_value=10000, value=18)
-            emoji_usage_rate = st.slider("Textual Syntactical Emoji Frequency", min_value=0.0, max_value=1.0, value=0.22, step=0.01)
-            last_active_hour = st.slider("Terminal Activity Clock Interaction Hour (0-23)", min_value=0, max_value=23, value=21)
-            swipe_time_of_day = st.selectbox("Peak Engagement Access Window", options=[0, 1, 2], format_func=lambda x: ["Late Night Routines", "Early Dawn Browsing", "Mid-Day/Afternoon Blocks"][x])
+# ---------------------------------
+# CUSTOM CSS
+# ---------------------------------
+st.markdown("""
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Syne:wght@400;600;700&display=swap');
 
-st.markdown("<br>", unsafe_allow_html=True)
+html, body, [class*='css'] {
+    font-family: 'Space Grotesk', sans-serif;
+    background-color: #070B1A;
+    color: white;
+}
 
-if st.button("🚀 INITIATE GHOSTING MATRIX ANALYSIS"):
-    g_fluid = 1 if gender_ui == "Genderfluid" else 0
-    g_male = 1 if gender_ui == "Male" else 0
-    g_nonbinary = 1 if gender_ui == "Non-binary" else 0
-    g_prefer_not = 1 if gender_ui == "Prefer Not to Say" else 0
-    g_trans = 1 if gender_ui == "Transgender" else 0
-    
-    msg_to_usage_ratio = message_sent_count / (app_usage_time_min + 1)
-    likes_to_match_ratio = likes_received / (mutual_matches + 1)
-    selectivity_index = likes_received / (swipe_right_ratio + 1e-6)
-    engagement_score_calc = (message_sent_count + likes_received) / 2.0
-    app_usage_time_label_calc = 1 if app_usage_time_min > 30 else 0
-    
-    input_payload = {
-        'gender_genderfluid': g_fluid, 'gender_male': g_male, 'gender_non-binary': g_nonbinary, 
-        'gender_prefer not to say': g_prefer_not, 'gender_transgender': g_trans,
-        'sexual_orientation': sexual_orientation, 'location_type': location_type, 'income_bracket': income_bracket,
-        'app_usage_time_min': app_usage_time_min, 'app_usage_time_label': app_usage_time_label,
-        'swipe_right_ratio': swipe_right_ratio, 'swipe_right_label': swipe_right_label,
-        'likes_received': likes_received, 'mutual_matches': mutual_matches, 'profile_pics_count': profile_pics_count,
-        'bio_length': bio_length, 'message_sent_count': message_sent_count, 'emoji_usage_rate': emoji_usage_rate,
-        'last_active_hour': last_active_hour, 'swipe_time_of_day': swipe_time_of_day,
-        'selectivity_index': selectivity_index, 'msg_to_usage_ratio': msg_to_usage_ratio,
-        'likes_to_match_ratio': likes_to_match_ratio, 'engagement_score_calc': engagement_score_calc,
-        'app_usage_time_label_calc': app_usage_time_label_calc
+.stApp {
+    background:
+        radial-gradient(circle at 20% 50%, rgba(255,0,110,0.15), transparent 30%),
+        radial-gradient(circle at 80% 80%, rgba(131,56,236,0.15), transparent 30%),
+        radial-gradient(circle at 40% 20%, rgba(58,134,255,0.1), transparent 30%),
+        #070B1A;
+}
+
+.hero-title{
+    font-family: 'Syne', sans-serif;
+    font-size: 85px;
+    line-height: 1.0;
+    font-weight: 700;
+    margin-bottom: 20px;
+    white-space: nowrap;
+}
+
+.hero-sub{e
+    color:#00ffcc;
+    font-size:28px;
+    font-weight:700;
+}
+
+.hero-desc{
+    color:#bbbbcc;
+    font-size:20px;
+    margin-top:25px;
+    max-width:700px;
+    line-height:1.7;
+}
+
+.stat-card{
+    background: rgba(255,255,255,0.03);
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:20px;
+    padding:30px;
+    text-align:center;
+    backdrop-filter: blur(12px);
+    transition:0.3s;
+}
+
+.stat-card:hover{
+    transform:translateY(-6px);
+    border:1px solid #ff0080;
+}
+
+.stat-num{
+    font-size:42px;
+    font-weight:700;
+    color:#ff0080;
+}
+
+.stat-label{
+    color:#bbbbcc;
+    margin-top:10px;
+    font-size:18px;
+}
+
+.section-title {
+    font-size:50px;
+    font-weight:700;
+    margin-bottom:30px;
+    font-family: 'Syne', sans-serif;
+}
+
+.stButton>button {
+    width:100%;
+    background:linear-gradient(90deg,#ff0080,#8b5cf6);
+    color:white;
+    border:none;
+    border-radius:15px;
+    padding:18px;
+    font-size:22px;
+    font-weight:700;
+    box-shadow:0px 0px 25px rgba(255,0,128,0.5);
+    transition:0.3s;
+}
+
+.stButton>button:hover {
+    transform:scale(1.02);
+}
+
+.result-box {
+    background: rgba(255,255,255,0.04);
+    padding:40px;
+    border-radius:25px;
+    border:1px solid rgba(255,255,255,0.1);
+    margin-top:20px;
+    text-align: center;
+}
+
+.heart {
+    position: relative;
+    width: 220px;
+    height: 220px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 0, 128, 0.15) 100%);
+    backdrop-filter: blur(25px);
+    transform: rotate(-45deg);
+    animation: heartbeat 1.5s infinite ease-in-out;
+}
+
+.heart::before,
+.heart::after {
+    content: '';
+    position: absolute;
+    width: 220px;
+    height: 220px;
+    background: inherit;
+    border-radius: 50%;
+}
+
+.heart::before {
+    top: -110px;
+    left: 0;
+}
+
+.heart::after {
+    top: 0;
+    left: 110px;
+}
+
+@keyframes heartbeat {
+    0% {
+        transform: rotate(-45deg) scale(0.9);
     }
-    
-    df_inference = pd.DataFrame([input_payload])
-    expected_features = [
-        'gender_genderfluid', 'gender_male', 'gender_non-binary', 'gender_prefer not to say', 'gender_transgender',
-        'sexual_orientation', 'location_type', 'income_bracket', 'app_usage_time_min', 'app_usage_time_label',
-        'swipe_right_ratio', 'swipe_right_label', 'likes_received', 'mutual_matches', 'profile_pics_count',
-        'bio_length', 'message_sent_count', 'emoji_usage_rate', 'last_active_hour', 'swipe_time_of_day',
-        'selectivity_index', 'msg_to_usage_ratio', 'likes_to_match_ratio', 'engagement_score_calc', 'app_usage_time_label_calc'
-    ]
-    
-    if hasattr(model, 'feature_names_in_'):
-        features_to_use = list(model.feature_names_in_)
-    elif hasattr(model, 'steps') and hasattr(model.steps[0][1], 'feature_names_in_'):
-        features_to_use = list(model.steps[0][1].feature_names_in_)
-    else:
-        features_to_use = [f for f in expected_features if f in df_inference.columns]
 
-    df_inference = df_inference.reindex(columns=features_to_use, fill_value=0.0)
-    
-    try:
-        prediction = model.predict(df_inference)[0]
-        probabilities = model.predict_proba(df_inference)[0]
-        ghost_prob = probabilities[1]
-        
-        st.markdown("<h2 style='margin-top: 30px;'>📊 High-Class Analytical Report</h2>", unsafe_allow_html=True)
-        rc1, rc2 = st.columns([2, 1], gap="medium")
-        
-        with rc1:
-            if prediction == 1:
-                st.markdown(f"""
-                    <div style='background: rgba(239, 68, 68, 0.1); border-left: 6px solid #ef4444; padding: 24px; border-radius: 12px;'>
-                        <h4 style='color: #f87171; margin-top:0;'>🚨 CRITICAL RISK TRAJECTORY IDENTIFIED</h4>
-                        <p style='color: #fca5a5; margin-bottom:0; font-size: 15px;'>The AutoML predictive architecture has flagged this interaction profile as highly volatile. Behavioral indicators match communication drop-off signature profiles with high systemic confidence.</p>
-                    </div>
-                """, unsafe_allow_html=True)
-            else:
-                st.markdown(f"""
-                    <div style='background: rgba(16, 185, 129, 0.1); border-left: 6px solid #10b981; padding: 24px; border-radius: 12px;'>
-                        <h4 style='color: #34d399; margin-top:0;'>💚 HEALTHY RETENTION PROFILE MAINTAINED</h4>
-                        <p style='color: #a7f3d0; margin-bottom:0; font-size: 15px;'>The interaction metrics present robust operational equilibrium. Messaging frequencies and daily active durations strongly correlate with stable engagement pipelines.</p>
-                    </div>
-                """, unsafe_allow_html=True)
-                
-            with st.expander("🔍 Introspect System Engineering Layer"):
-                st.markdown(f"""
-                    <ul>
-                        <li><b>Calculated Engagement Score Metric:</b> {engagement_score_calc:.2f}</li>
-                        <li><b>User App Selectivity Factor:</b> {selectivity_index:.4f}</li>
-                        <li><b>Outbound Message to Usage Ratio:</b> {msg_to_usage_ratio:.4f}</li>
-                    </ul>
-                """, unsafe_allow_html=True)
-                
-        with rc2:
-            border_color = "#ef4444" if prediction == 1 else "#10b981"
-            st.markdown(f"""
-                <div class='metric-card' style='border-top: 5px solid {border_color};'>
-                    <p style='text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8; margin-bottom: 5px; font-size: 12px;'>Ghosting Confidence Probability</p>
-                    <h2 style='font-size: 48px; color: white; margin: 0;'>{ghost_prob:.2%}</h2>
-                    <div style='background-color: #334155; height: 6px; border-radius: 3px; margin-top: 15px; overflow: hidden;'>
-                        <div style='background-color: {border_color}; width: {ghost_prob*100}%; height: 100%;'></div>
-                    </div>
-                </div>
-            """, unsafe_allow_html=True)
-            
-    except Exception as prediction_error:
-        st.error("🚨 In-App Execution Pipeline Assessment Error")
-        st.code(str(prediction_error))
+    50% {
+        transform: rotate(-45deg) scale(1.02);
+        box-shadow: 0 0 120px rgba(255, 0, 128, 0.6);
+    }
+
+    100% {
+        transform: rotate(-45deg) scale(0.9);
+    }
+}
+</style>
+""", unsafe_allow_html=True)
+
+# ---------------------------------
+# NAVBAR
+# ---------------------------------
+selected = option_menu(
+    menu_title=None,
+    options=["Home", "Predict", "Models", "Insights", "About"],
+    icons=["house", "cpu", "bar-chart", "graph-up", "info-circle"],
+    orientation="horizontal",
+    manual_select=st.session_state.nav_index,
+    key="main_nav",
+    styles={
+        "container": {
+            "background-color": "#070B1A",
+            "padding": "15px"
+        },
+        "nav-link-selected": {
+            "background": "linear-gradient(90deg,#ff0080,#8b5cf6)"
+        }
+    }
+)
+
+# ---------------------------------
+# HOME PAGE
+# ---------------------------------
+if selected == "Home":
+
+    st.session_state.prediction_done = False
+
+    left, right = st.columns([1.5,1], gap="large")
+
+    with left:
+
+        st.markdown(
+            "<div class='hero-title'>Ghosted Predictor</div>",
+            unsafe_allow_html=True
+        )
+
+        st.markdown(
+            "<div class='hero-sub'>Dating Analytics Platform</div>",
+            unsafe_allow_html=True
+        )
+
+        st.markdown(
+            "<div class='hero-desc'>Discover your relationship destiny using futuristic machine learning. Predict ghosting probability, analyze dating behavior and gain deep relationship insights.</div>",
+            unsafe_allow_html=True
+        )
+
+        st.write(" ")
+
+        col1, col2, col3 = st.columns(3)
+
+        with col1:
+            st.markdown(
+                "<div class='stat-card'><div class='stat-num'>50K+</div><div class='stat-label'>Records Analyzed</div></div>",
+                unsafe_allow_html=True
+            )
+
+        with col2:
+            st.markdown(
+                "<div class='stat-card'><div class='stat-num'>6</div><div class='stat-label'>ML Model</div></div>",
+                unsafe_allow_html=True
+            )
+
+        with col3:
+            st.markdown(
+                "<div class='stat-card'><div class='stat-num'>87.75%</div><div class='stat-label'>KNN Accuracy</div></div>",
+                unsafe_allow_html=True
+            )
+
+        st.write(" ")
+
+        if st.button("✨ Start Prediction Now .... !"):
+            set_nav_page(1)
+
+    with right:
+        st.markdown(
+            "<div style='display:flex; justify-content:center; align-items:center; height:500px;'><div class='heart'></div></div>",
+            unsafe_allow_html=True
+        )
+
+# ---------------------------------
+# PREDICT PAGE
+# ---------------------------------
+elif selected == "Predict":
+
+    st.markdown("""
+    <style>
+
+    .predict-title{
+        font-size:58px;
+        font-weight:800;
+        margin-top:10px;
+        margin-bottom:35px;
+        font-family:'Syne', sans-serif;
+        color:white;
+    }
+
+    .sub-title{
+        font-size:22px;
+        font-weight:700;
+        margin-bottom:25px;
+        color:white;
+    }
+
+    .stSelectbox label,
+    .stSlider label,
+    .stNumberInput label{
+        color:white !important;
+        font-size:18px !important;
+        font-weight:500;
+    }
+
+    div[data-baseweb="select"] > div{
+        background-color:#1f2230 !important;
+        border-radius:12px !important;
+        border:none !important;
+    }
+
+    div[data-baseweb="input"] > div{
+        background-color:#1f2230 !important;
+        border-radius:12px !important;
+        border:none !important;
+    }
+
+    .stSlider > div > div > div > div{
+        background:#ff4d67 !important;
+    }
+
+    </style>
+    """, unsafe_allow_html=True)
+
+    st.markdown(
+        "<div class='predict-title'>Ghosting Prediction</div>",
+        unsafe_allow_html=True
+    )
+
+    container = st.container(border=True)
+
+    with container:
+
+        col1, col2, col3 = st.columns(3)
+
+        with col1:
+
+            st.markdown(
+                "<div class='sub-title'>👤 Demographics</div>",
+                unsafe_allow_html=True
+            )
+
+            gender = st.selectbox(
+                "Gender Orientation",
+                ["Male", "Female", "Non-Binary"]
+            )
+
+            sexual = st.selectbox(
+                "Sexual Orientation",
+                ["Straight", "Gay", "Bisexual"]
+            )
+
+            region = st.selectbox(
+                "Regional Profiling",
+                ["Urban", "Suburban", "Rural"]
+            )
+
+            income = st.selectbox(
+                "Annual Income Tier",
+                ["<30k", "30k-60k", "60k-100k", "100k+"]
+            )
+
+        with col2:
+
+            st.markdown(
+                "<div class='sub-title'>🧮 Activity Workspace</div>",
+                unsafe_allow_html=True
+            )
+
+            education = st.selectbox(
+                "Completed Education",
+                ["HS", "Bachelor", "Master", "PhD"]
+            )
+
+            usage = st.number_input(
+                "Daily Application Time (mins)",
+                min_value=0,
+                max_value=500,
+                value=95
+            )
+
+            likes = st.number_input(
+                "Cumulative Likes Received",
+                min_value=0,
+                max_value=10000,
+                value=120
+            )
+
+            matches = st.number_input(
+                "Mutual Matches Achieved",
+                min_value=0,
+                max_value=1000,
+                value=15
+            )
+
+        with col3:
+
+            st.markdown(
+                "<div classt='sub-title'>💬 Behavioral Matrix</div>",
+                unsafe_allow_html=True
+            )
+
+            swipe = st.slider(
+                "Swipe-Right Approval Rate",
+                0.0,
+                1.0,
+                0.42
+            )
+
+            messages = st.number_input(
+                "Sent Message Volume",
+                min_value=0,
+                max_value=10000,
+                value=30
+            )
+
+            bio = st.slider(
+                "Bio Word Count Profile",
+                0,
+                500,
+                150
+            )
+
+            photos = st.slider(
+                "Uploaded Pictures",
+                0,
+                10,
+                4
+            )
+
+        st.write(" ")
+
+        if st.button("Analyze Interaction Vector 🚀"):
+            st.session_state.prediction_done = True
+
+        # -------------------------
+    # RESULTS
+    # -------------------------
+    if st.session_state.prediction_done:
+
+        components.html(
+            """
+            <script>
+            setTimeout(function() {
+                const element = document.getElementById('prediction-results');
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 300);
+            </script>
+            """,
+            height=0
+        )
+
+        # Removed unused variables
+        # gender, education, spam_score, is_empty_profile, engagement_score
+
+        selectivity_index = likes / (swipe + 1e-6)
+        # app_usage_norm = usage / 500 # This variable is not used in the new input_data creation.
+        # engagement_score = app_usage_norm * 1 # Removed as per user instruction.
+        msg_to_usage_ratio = messages / (usage + 1)
+        likes_to_match_ratio = likes / (matches + 1)
+        # spam_score = messages * swipe # Removed as per user instruction.
+        # is_empty_profile = int((bio < 10) and (photos == 1)) # Removed as per user instruction.
+
+        # New calculations for engagement_score_calc and app_usage_time_label_calc
+        engagement_score_calc = usage / 500
+        app_usage_time_label_calc = 0
+
+        input_data = pd.DataFrame([
+            {
+                'sexual_orientation': {"Straight": 3, "Gay": 1, "Bisexual": 0}[sexual],
+                'location_type': {"Urban": 5, "Suburban": 4, "Rural": 0}[region],
+                'income_bracket': {"<30k": 0, "30k-60k": 1, "60k-100k": 3, "100k+": 6}[income],
+                'app_usage_time_min': usage,
+                'app_usage_time_label': 0,
+                'swipe_right_ratio': swipe,
+                'swipe_right_label': 0,
+                'likes_received': likes,
+                'mutual_matches': matches,
+                'profile_pics_count': photos,
+                'bio_length': bio,
+                'message_sent_count': messages,
+                'emoji_usage_rate': 0.0,
+                'last_active_hour': 12,
+                'swipe_time_of_day': 0,
+                'selectivity_index': selectivity_index,
+                'msg_to_usage_ratio': msg_to_usage_ratio,
+                'likes_to_match_ratio': likes_to_match_ratio,
+                'engagement_score_calc': engagement_score_calc,
+                'app_usage_time_label_calc': app_usage_time_label_calc
+            }
+        ])
+
+        input_data = input_data[[
+            'sexual_orientation',
+            'location_type',
+            'income_bracket',
+            'app_usage_time_min',
+            'app_usage_time_label',
+            'swipe_right_ratio',
+            'swipe_right_label',
+            'likes_received',
+            'mutual_matches',
+            'profile_pics_count',
+            'bio_length',
+            'message_sent_count',
+            'emoji_usage_rate',
+            'last_active_hour',
+            'swipe_time_of_day',
+            'selectivity_index',
+            'msg_to_usage_ratio',
+            'likes_to_match_ratio',
+            'engagement_score_calc',
+            'app_usage_time_label_calc'
+        ]]
+
+        prediction_probability = pipeline.predict_proba(input_data)[0][1]
+        risk = int(prediction_probability * 100)
+
+        status = (
+            "🚩 High Risk"
+            if risk > 70
+            else "⚠️ Moderate Risk"
+            if risk > 40
+            else "✅ Low Risk"
+        )
+
+        color = (
+            "#ff0040"
+            if risk > 70
+            else "#ffaa00"
+            if risk > 40
+            else "#00ffcc"
+        )
+
+        st.markdown(
+            f"""
+            <div class='result-box' id='prediction-results'>
+                <h1 style='color:{color};'>{risk}%</h1>
+                <h2>{status}</h2>
+                <p style='font-size:20px;color:#bbbbcc'>
+                AI detected your ghosting probability based on dating behavior.
+                </p>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+        fig = go.Figure(
+            go.Indicator(
+                mode="gauge+number",
+                value=risk,
+                gauge={
+                    'axis': {'range': [0, 100]},
+                    'bar': {'color': "#ff0080"}
+                }
+            )
+        )
+
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            font_color="white",
+            height=300
+        )
+
+        st.plotly_chart(fig, use_container_width=True)
+
+# ---------------------------------
+# MODELS PAGE
+# ---------------------------------
+elif selected == "Models":
+
+    st.markdown("""
+    <style>
+
+    .model-title{
+        font-size:64px;
+        font-weight:800;
+        margin-top:10px;
+        margin-bottom:35px;
+        color:white;
+    }
+
+    .best-model-box{
+        background:rgba(0,255,120,0.15);
+        border:1px solid rgba(0,255,120,0.2);
+        padding:22px;
+        border-radius:16px;
+        margin-top:25px;
+        font-size:22px;
+        color:#4dff88;
+        font-weight:600;
+    }
+
+    .table-wrapper{
+        border-radius:20px;
+        overflow:hidden;
+        border:1px solid rgba(255,255,255,0.08);
+    }
+
+    div[data-testid="stDataFrame"]{
+        border:none !important;
+    }
+
+    </style>
+    """, unsafe_allow_html=True)
+
+    st.markdown("""
+    <div class='model-title'>
+    🎧 Model Selection & Comparison
+    </div>
+    """, unsafe_allow_html=True)
+
+    model_df = pd.DataFrame({
+    "Model": [
+        "Random Forest",
+        "XGBoost",
+        "Logistic Regression",
+        "Support Vector Machine",
+        "K-Nearest Neighbors",
+        "AutoML Champion (XGBoost)"
+    ],
+    "Accuracy": [0.8361, 0.7060, 0.4910, 0.4908, 0.8775, 0.8780],
+    "Macro F1 Score": [0.4999, 0.4798, 0.3969, 0.3969, 0.4936, 0.4894]
+   }, index=[1, 2, 3, 4, 5, 6])
+
+    model_df.index.name = "No."
+
+    st.dataframe(model_df, use_container_width=True)
+
+
+    st.markdown("""
+<div class='best-model-box'>
+🏆 Best Performing Model: <b>K-Nearest Neighbors</b>
+(Accuracy: <b>87.75%</b>, Macro F1: <b>49.36%</b>)
+</div>
+""", unsafe_allow_html=True)
+
+    st.write(" ")
+
+    fig = px.bar(
+        model_df,
+        x="Model",
+        y="Accuracy",
+        text="Accuracy",
+        color="Accuracy",
+        color_continuous_scale="purples"
+    )
+
+    fig.update_traces(
+        texttemplate='%{text:.2f}',
+        textposition='outside'
+    )
+
+    fig.update_layout(
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="#070B1A",
+        font_color="white",
+        height=500,
+        title="Model Accuracy Comparison",
+        title_font_size=28,
+        xaxis_title="",
+        yaxis_title="Accuracy",
+        showlegend=False
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
+
+# ---------------------------------
+# INSIGHTS PAGE
+# ---------------------------------
+elif selected == "Insights":
+
+    st.markdown(
+        "<div class='section-title'>Insights Dashboard</div>",
+        unsafe_allow_html=True
+    )
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.markdown(
+            "<div class='stat-card'><div class='stat-num'>9.92%</div><div class='stat-label'>Ghosted Profiles</div></div>",
+            unsafe_allow_html=True
+        )
+
+    with col2:
+        st.markdown(
+            "<div class='stat-card'><div class='stat-num'>90.08%</div><div class='stat-label'>Successful Interactions</div></div>",
+            unsafe_allow_html=True
+        )
+
+    with col3:
+        st.markdown(
+            "<div class='stat-card'><div class='stat-num'>50K</div><div class='stat-label'>Dataset Records</div></div>",
+            unsafe_allow_html=True
+        )
+
+    pie = px.pie(
+        names=["Ghosted","Healthy"],
+        values=[9.92,90.08],
+        hole=0.5,
+        color_discrete_sequence=["#ff0080","#8b5cf6"]
+    )
+
+    pie.update_layout(
+        paper_bgcolor="rgba(0,0,0,0)",
+        font_color="white",
+        height=450
+    )
+
+    st.plotly_chart(pie, use_container_width=True)
+
+# ---------------------------------
+# ABOUT PAGE
+# ---------------------------------
+elif selected == "About":
+
+    st.markdown(
+        "<div class='section-title'>About Ghosted Predictor</div>",
+        unsafe_allow_html=True
+    )
+
+    st.markdown(
+        """
+        <div class='result-box'>
+            <h2>Dating Analytics Platform</h2>
+            <p style='font-size:20px;color:#bbbbcc; line-height:1.8'>
+               Ghosted Predictor is an intelligent machine learning platform designed to analyze dating app interactions and estimate the likelihood of ghosting.
+               By leveraging behavioral patterns, user engagement metrics and communication trends, the system provides data-driven relationship insights.
+               The platform evaluates multiple predictive models to identify the most effective approach for ghosting detection.
+               Through interactive analytics and visualization, users can better understand their dating behaviors and communication outcomes.
+               Our goal is to transform complex dating data into meaningful predictions that support informed relationship decisions.
+               </p>
+
+                    """,
+
+                  unsafe_allow_html=True
+                  )
+
+else:
+
+    st.session_state.prediction_done = False
+    st.write(f"Welcome to the {selected} page.")
