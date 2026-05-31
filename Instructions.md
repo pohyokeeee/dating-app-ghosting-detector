@@ -38,7 +38,7 @@ venv\Scripts\activate.bat
 ### 4. Install dependencies
 
 ```bash
-pip install -r requirements.txt
+
 ```
 
 ## Running the Application
