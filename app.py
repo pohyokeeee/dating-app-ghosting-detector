@@ -753,7 +753,7 @@ elif selected == "About":
                By leveraging behavioral patterns, user engagement metrics and communication trends, the system provides data-driven relationship insights.
                The platform evaluates multiple predictive models to identify the most effective approach for ghosting detection.
                Through interactive analytics and visualization, users can better understand their dating behaviors and communication outcomes.
-               Our goal is to transform complex dating data into meaningful predictions that support informed relationship decisions.
+               Our goal is to transform complex dating data into meaningful predictions that support informed relationship decisions.....
                </p>
 
                     """,
